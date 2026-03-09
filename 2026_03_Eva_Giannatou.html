@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promotion Readiness Dashboard</title>
+<style>
+  :root {
+    --primary: #1a1a2e;
+    --accent: #0f3460;
+    --highlight: #e94560;
+    --success: #2ecc71;
+    --warning: #f39c12;
+    --info: #3498db;
+    --light: #f4f6f9;
+    --card: #ffffff;
+    --text: #2c3e50;
+    --muted: #7f8c8d;
+    --border: #e0e0e0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--light);
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 28px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.3px; }
+  .header p { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+  .header-meta { text-align: right; font-size: 12px; opacity: 0.8; line-height: 1.8; }
+  .header-meta span { display: block; }
+  .header-meta [contenteditable] {
+    border-bottom: 1px dashed rgba(255,255,255,0.5);
+    cursor: text;
+    min-width: 60px;
+    display: inline-block;
+    padding: 0 2px;
+    outline: none;
+  }
+  .header-meta [contenteditable]:hover,
+  .header-meta [contenteditable]:focus {
+    border-bottom-color: white;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+  }
+
+  /* NAVIGATION */
+  .nav {
+    background: var(--accent);
+    display: flex;
+    gap: 2px;
+    padding: 0 36px;
+    overflow-x: auto;
+  }
+  .nav button {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.7);
+    padding: 12px 18px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav button:hover { color: white; }
+  .nav button.active { color: white; border-bottom-color: var(--highlight); }
+
+  /* MAIN */
+  .main { padding: 28px 36px; max-width: 1200px; margin: 0 auto; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 14px 0 8px;
+  }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .main { padding: 16px; }
+    .header { padding: 20px; }
+    .nav { padding: 0 16px; }
+  }
+
+  /* OVERVIEW META */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .meta-item { background: var(--light); border-radius: 8px; padding: 12px 16px; }
+  .meta-item label { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+  .meta-item input, .meta-item select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    outline: none;
+  }
+
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .kpi {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    text-align: center;
+    border-top: 4px solid var(--accent);
+  }
+  .kpi.red { border-top-color: var(--highlight); }
+  .kpi.green { border-top-color: var(--success); }
+  .kpi.orange { border-top-color: var(--warning); }
+  .kpi.blue { border-top-color: var(--info); }
+  .kpi-value { font-size: 28px; font-weight: 800; color: var(--accent); }
+  .kpi-value.red { color: var(--highlight); }
+  .kpi-value.green { color: var(--success); }
+  .kpi-value.orange { color: var(--warning); }
+  .kpi-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { margin: 6px 0 14px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .progress-bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+  .fill-green { background: var(--success); }
+  .fill-blue { background: var(--info); }
+  .fill-orange { background: var(--warning); }
+  .fill-red { background: var(--highlight); }
+
+  /* PHASE TIMELINE */
+  .timeline { display: flex; gap: 0; margin-bottom: 20px; }
+  .phase {
+    flex: 1;
+    padding: 16px;
+    background: var(--light);
+    border-left: 4px solid var(--border);
+    position: relative;
+  }
+  .phase:first-child { border-radius: 8px 0 0 8px; border-left: 4px solid var(--info); }
+  .phase.stretch { border-left-color: var(--warning); }
+  .phase.demonstrate { border-left-color: var(--success); border-radius: 0 8px 8px 0; }
+  .phase-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+  .phase-months { font-size: 13px; font-weight: 600; color: var(--text); margin: 2px 0; }
+  .phase-focus { font-size: 12px; color: var(--muted); }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: var(--light); }
+  th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  /* EDITABLE CELLS */
+  td[contenteditable="true"] {
+    outline: none;
+    cursor: text;
+  }
+  td[contenteditable="true"]:focus {
+    background: #fffde7;
+    border-radius: 4px;
+  }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .badge-grey { background: #ecf0f1; color: #7f8c8d; }
+  .badge-blue { background: #d6eaf8; color: #2980b9; }
+  .badge-green { background: #d5f5e3; color: #27ae60; }
+  .badge-orange { background: #fdebd0; color: #e67e22; }
+  .badge-red { background: #fce4e4; color: #c0392b; }
+
+  /* RATING STARS */
+  .rating { display: flex; gap: 3px; }
+  .star {
+    width: 18px; height: 18px;
+    cursor: pointer;
+    color: #ddd;
+    font-size: 16px;
+    transition: color 0.15s;
+  }
+  .star.filled { color: #f39c12; }
+
+  /* CHECKBOX */
+  .check-cell { text-align: center; }
+  .check-cell input[type="checkbox"] {
+    width: 16px; height: 16px; cursor: pointer;
+    accent-color: var(--success);
+  }
+
+  /* GAP CARDS */
+  .gap-card {
+    border-left: 4px solid var(--highlight);
+    background: var(--card);
+    border-radius: 0 10px 10px 0;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .gap-card.gap2 { border-left-color: var(--warning); }
+  .gap-card.gap3 { border-left-color: var(--info); }
+  .gap-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .gap-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .gap-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .gap-field label { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.4px; display: block; margin-bottom: 3px; }
+  .gap-field p { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  /* STRENGTH CARDS */
+  .strength-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-top: 3px solid var(--success);
+  }
+  .strength-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: var(--text); }
+  .strength-row { display: flex; flex-direction: column; gap: 8px; }
+  .strength-item label { font-size: 11px; text-transform: uppercase; color: var(--muted); }
+  .strength-item p { font-size: 13px; color: var(--text); line-height: 1.5; margin-top: 2px; }
+  .arrow { text-align: center; font-size: 18px; color: var(--muted); padding: 4px 0; }
+
+  /* NOTES LOG */
+  .notes-table td textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 36px;
+    outline: none;
+  }
+  .notes-table td textarea:focus { border-color: var(--info); }
+  .dim-del-btn { background:none; border:none; cursor:pointer; color:transparent; font-size:13px; padding:0 2px; line-height:1; border-radius:3px; transition:color 0.15s; }
+  #dimensions-body tr:hover .dim-del-btn { color:var(--muted); }
+  .dim-del-btn:hover { color:#e94560 !important; }
+  .note-del-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; padding:2px 6px; border-radius:4px; line-height:1; vertical-align:middle; }
+  .note-del-btn:hover { color:#e94560; background:rgba(233,69,96,0.08); }
+  .auto-log-list { margin:4px 0 0 16px; padding:0; font-size:12px; color:var(--muted); list-style:disc; }
+  .auto-log-list li { margin-bottom:2px; line-height:1.5; }
+  .auto-log-cell details summary { cursor:pointer; font-size:12px; color:var(--info); font-weight:600; list-style:none; }
+  .auto-log-cell details summary::-webkit-details-marker { display:none; }
+  .auto-log-cell details summary::before { content:'▶ '; font-size:10px; }
+  .auto-log-cell details[open] summary::before { content:'▼ '; }
+  .auto-log-row td { background: #f5f8ff; }
+  .action-due-input { border:none; font-size:13px; font-family:inherit; background:transparent; color:var(--text); width:130px; cursor:pointer; }
+  .action-due-input:focus { outline:1px solid var(--info); border-radius:4px; }
+  /* SAVE BAR */
+  .nav { display:flex; align-items:center; gap:4px; }
+  .save-btn { margin-left:auto; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:7px 16px; font-size:13px; font-weight:600; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
+  .save-btn:hover { opacity:0.85; }
+  .load-btn { background:#f0f4ff; color:var(--accent); border:1px solid #c7d4f5; border-radius:8px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
+  .load-btn:hover { opacity:0.8; }
+  .save-label { font-size:11px; color:var(--muted); white-space:nowrap; padding-right:4px; }
+  .add-row-btn {
+    background: var(--light);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .add-row-btn:hover { background: #e8f4fd; color: var(--info); border-color: var(--info); }
+
+  /* OVERALL READINESS */
+  .readiness-dial {
+    text-align: center;
+    padding: 20px;
+  }
+  .dial-value { font-size: 56px; font-weight: 900; color: var(--accent); }
+  .dial-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .dial-sub { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* EDITABLE TEXT */
+  [contenteditable="true"] { outline: none; }
+  [contenteditable="true"]:empty:before { content: attr(data-placeholder); color: #bdc3c7; font-style: italic; }
+
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .tip {
+    background: #eaf4ff;
+    border-left: 3px solid var(--info);
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;  }
+
+  .comment-cell {
+    width: 100%; min-width: 140px; border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 7px; font-size: 12px; font-family: inherit; resize: vertical;
+    min-height: 32px; outline: none; color: var(--text);
+  }
+  .comment-cell:focus { border-color: var(--info); }
+
+  .pct-label {
+    font-weight: 700; color: var(--accent); cursor: pointer; font-size: 12px;
+  }
+  .pct-label:hover { text-decoration: underline; }
+  .pct-input {
+    width: 52px; border: 1px solid var(--info); border-radius: 4px;
+    padding: 2px 4px; font-size: 12px; font-weight: 700; color: var(--accent); text-align: right;
+  }
+  .dim-select {
+    border: none; background: transparent; font-size: 12px; color: var(--muted);
+    cursor: pointer; outline: none; font-family: inherit; max-width: 160px;
+  }
+  .dim-link { cursor: default; font-size: 11px; }
+
+  .subtask-row td { background: #f4f6fb; font-size: 12px; border-bottom: 1px solid #eef0f5; }
+  .subtask-row td[contenteditable="true"]:empty:before { content: attr(data-placeholder); color: #bdc3c7; font-style: italic; }
+  .subtask-del-btn { background:none; border:none; cursor:pointer; color:transparent; font-size:13px; padding:0 2px; border-radius:3px; transition:color 0.15s; vertical-align:middle; }
+  .subtask-row:hover .subtask-del-btn { color: var(--muted); }
+  .subtask-del-btn:hover { color:#e94560 !important; }
+  .subtask-add-row td { background: #f4f6fb; padding: 3px 8px 6px 36px; border-bottom: 1px solid #eef0f5; }
+  .subtask-toggle { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--muted); padding: 0 4px; line-height: 1; }
+  .subtask-toggle:hover { color: var(--accent); }
+  .action-del-btn { background:none; border:none; cursor:pointer; color:transparent; font-size:13px; padding:0 2px; border-radius:3px; transition:color 0.15s; vertical-align:middle; }
+  #action-body tr:hover .action-del-btn { color: var(--muted); }
+  .action-del-btn:hover { color:#e94560 !important; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>📋 Promotion Readiness Dashboard</h1>
+  </div>
+  <div class="header-meta">
+    <span><strong>Employee:</strong> <span id="employee-name" contenteditable="true" data-placeholder="Employee name">Eva Giannatou</span></span>
+    <span><strong>Manager:</strong> <span id="manager-name" contenteditable="true" data-placeholder="Manager name">—</span></span>
+    <span><strong>Period:</strong> <span id="period-name" contenteditable="true">March 2026</span></span>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="active" onclick="showSection('overview', this)">📊 Overview</button>
+  <button onclick="showSection('actions', this)">🗓 Action Plan</button>
+  <button onclick="showSection('notes', this)">📝 Notes &amp; Log</button>
+  <span id="save-label" class="save-label">Saved 12:34 · 09/03/2026</span>
+  <button class="load-btn" id="_fsa_btn" onclick="connectDataFile()" title="Connect data.json for serverless persistence">📂 Connect data.json</button>
+  <button class="load-btn" onclick="loadData()">🔄 Load from JSON</button>
+  <button class="save-btn" onclick="saveAndDownload()">💾 Save &amp; Update</button>
+</div>
+
+<div class="main">
+
+  <!-- SECTION: OVERVIEW -->
+  <div id="overview" class="section active">
+
+    <div class="meta-grid" style="align-items:stretch">
+      <div class="meta-item"><label>Current Level</label><input value="L4 / IC4"></div>
+      <div class="meta-item"><label>Target Level</label><input value="L5 / IC5"></div>
+      <div class="meta-item"><label>Review Date</label><input type="date" value="2026-09-01"></div>
+      <div class="meta-item" style="text-align:center;padding:16px 12px">
+        <label>Overall Readiness</label>
+        <div class="dial-value" id="dial-value" style="font-size: 32px; margin: 4px 0px 2px; color: rgb(233, 69, 96);">11%</div>
+        <div id="dial-sub" style="font-size:11px;color:var(--muted)">Significant gaps remain</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔑 Key Dimensions <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:6px">computed from Action Plan</span></h2>
+      <table>
+        <thead><tr>
+          <th>Dimension</th><th style="width:110px">Actions</th><th>Progress</th><th style="width:130px">Status</th>
+        </tr></thead>
+        <tbody id="dimensions-body"><tr data-dim="tech">
+        <td style="display:flex;align-items:center;gap:5px">Technical Depth<button class="dim-del-btn" onclick="removeDimension('tech')" title="Remove">×</button></td>
+        <td style="font-size:12px;white-space:nowrap">0 / 2 done</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">5%</span></div><div class="progress-bar"><div class="progress-fill fill-red" style="width:5%" data-pct="5"></div></div></div></td>
+        <td><span class="badge badge-grey">Not Started</span></td></tr><tr data-dim="influence">
+        <td style="display:flex;align-items:center;gap:5px">Cross-functional Influence<button class="dim-del-btn" onclick="removeDimension('influence')" title="Remove">×</button></td>
+        <td style="font-size:12px;white-space:nowrap">0 / 1 done</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">5%</span></div><div class="progress-bar"><div class="progress-fill fill-red" style="width:5%" data-pct="5"></div></div></div></td>
+        <td><span class="badge badge-grey">Not Started</span></td></tr><tr data-dim="ownership">
+        <td style="display:flex;align-items:center;gap:5px">Ownership &amp; Scope<button class="dim-del-btn" onclick="removeDimension('ownership')" title="Remove">×</button></td>
+        <td style="font-size:12px;white-space:nowrap">0 / 2 done</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">5%</span></div><div class="progress-bar"><div class="progress-fill fill-red" style="width:5%" data-pct="5"></div></div></div></td>
+        <td><span class="badge badge-grey">Not Started</span></td></tr><tr data-dim="mentorship">
+        <td style="display:flex;align-items:center;gap:5px">Mentorship &amp; Leadership<button class="dim-del-btn" onclick="removeDimension('mentorship')" title="Remove">×</button></td>
+        <td style="font-size:12px;white-space:nowrap">0 / 1 done</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">5%</span></div><div class="progress-bar"><div class="progress-fill fill-red" style="width:5%" data-pct="5"></div></div></div></td>
+        <td><span class="badge badge-grey">Not Started</span></td></tr><tr data-dim="communication">
+        <td style="display:flex;align-items:center;gap:5px">Communication &amp; Visibility<button class="dim-del-btn" onclick="removeDimension('communication')" title="Remove">×</button></td>
+        <td style="font-size:12px;white-space:nowrap">0 / 1 done</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">50%</span></div><div class="progress-bar"><div class="progress-fill fill-orange" style="width:50%" data-pct="50"></div></div></div></td>
+        <td><span class="badge badge-orange">In Progress</span></td></tr><tr data-dim="">
+        <td style="display:flex;align-items:center;gap:5px"><em style="color:var(--muted)">Unassigned</em></td>
+        <td style="font-size:12px;white-space:nowrap">0 / 1 done</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">5%</span></div><div class="progress-bar"><div class="progress-fill fill-red" style="width:5%" data-pct="5"></div></div></div></td>
+        <td><span class="badge badge-grey">Not Started</span></td></tr></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addDimension()">+ Add Dimension</button>
+    </div>
+
+  </div><!-- /overview -->
+
+  <!-- SECTION: ACTION PLAN -->
+  <div id="actions" class="section">
+    <div class="card">
+      <h2>🗓 Action Plan</h2>
+
+      <table id="action-table">
+        <thead><tr>
+          <th style="width:28px"></th><th>Action</th><th>Type</th><th>Dimension</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th><th>Comments</th>
+        </tr></thead>
+        <tbody id="action-body">
+          <tr data-dim="ownership">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Lead cross-team project &amp; present findings at org all-hands</td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)" style="font-size:11px">Gap</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="ownership" selected="">Ownership &amp; Scope</option><option value="tech">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="communication">Communication &amp; Visibility</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva</td>
+            <td><input type="date" class="action-due-input" value="2026-06-30"></td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)">High</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="mentorship">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Take on one mentee; run monthly structured 1:1s</td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)" style="font-size:11px">Gap</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="mentorship" selected="">Mentorship &amp; Leadership</option><option value="tech">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="ownership">Ownership &amp; Scope</option><option value="communication">Communication &amp; Visibility</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva</td>
+            <td><input type="date" class="action-due-input" value="2026-04-30"></td>
+            <td><span class="badge badge-orange" onclick="cycleBadge(this)">Medium</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="communication">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Request slot at leadership review; prepare executive summary deck</td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)" style="font-size:11px">Gap</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="communication" selected="">Communication &amp; Visibility</option><option value="tech">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="ownership">Ownership &amp; Scope</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva + Manager</td>
+            <td><input type="date" class="action-due-input" value="2026-05-31"></td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)">High</span></td>
+            <td><span class="badge badge-blue" onclick="cycleBadge(this)" data-status="">In Progress</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="tech">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Publish ML best-practices guide as org-level standard; present at engineering summit</td>
+            <td><span class="badge badge-green" onclick="cycleBadge(this)" style="font-size:11px">Strength</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="tech" selected="">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="ownership">Ownership &amp; Scope</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="communication">Communication &amp; Visibility</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva</td>
+            <td><input type="date" class="action-due-input" value="2026-06-30"></td>
+            <td><span class="badge badge-orange" onclick="cycleBadge(this)">Medium</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="influence">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Formalise cross-team liaison role; capture positive feedback in promo doc</td>
+            <td><span class="badge badge-green" onclick="cycleBadge(this)" style="font-size:11px">Strength</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="influence" selected="">Cross-functional Influence</option><option value="tech">Technical Depth</option><option value="ownership">Ownership &amp; Scope</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="communication">Communication &amp; Visibility</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva + Manager</td>
+            <td><input type="date" class="action-due-input" value="2026-05-31"></td>
+            <td><span class="badge badge-orange" onclick="cycleBadge(this)">Medium</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="tech">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Document "judgment calls" instances in promotion evidence package</td>
+            <td><span class="badge badge-green" onclick="cycleBadge(this)" style="font-size:11px">Strength</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="tech" selected="">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="ownership">Ownership &amp; Scope</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="communication">Communication &amp; Visibility</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva</td>
+            <td><input type="date" class="action-due-input" value="2026-08-31"></td>
+            <td><span class="badge badge-orange" onclick="cycleBadge(this)">Medium</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="ownership">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Take on one stretch project with ambiguous scope to demonstrate next-level ownership</td>
+            <td><span class="badge badge-green" onclick="cycleBadge(this)" style="font-size:11px">Strength</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="ownership" selected="">Ownership &amp; Scope</option><option value="tech">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="communication">Communication &amp; Visibility</option><option value="">—</option></select></td>
+            <td contenteditable="true">Eva</td>
+            <td><input type="date" class="action-due-input" value="2026-06-30"></td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)">High</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+          <tr data-dim="">
+            <td><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button></td>
+            <td contenteditable="true">Compile promotion evidence package</td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" style="font-size:11px">General</span></td>
+            <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim(this.value)"><option value="" selected="">—</option><option value="tech">Technical Depth</option><option value="influence">Cross-functional Influence</option><option value="ownership">Ownership &amp; Scope</option><option value="mentorship">Mentorship &amp; Leadership</option><option value="communication">Communication &amp; Visibility</option></select></td>
+            <td contenteditable="true">Eva + Manager</td>
+            <td><input type="date" class="action-due-input" value="2026-08-31"></td>
+            <td><span class="badge badge-red" onclick="cycleBadge(this)">High</span></td>
+            <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status="">Not Started</span></td>
+            <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="add-row-btn" onclick="addActionRow()">+ Add Action</button>
+    </div>
+  </div><!-- /actions -->
+
+  <!-- SECTION: NOTES & LOG -->
+  <div id="notes" class="section">
+    <div class="card">
+      <h2>📝 Manager Notes &amp; 1:1 Log</h2>
+      <table class="notes-table" id="notes-table">
+        <thead><tr>
+          <th style="width:120px">Date</th>
+          <th style="width:130px">Type</th>
+          <th>Notes</th>
+          <th style="width:36px"></th>
+        </tr></thead>
+        <tbody id="notes-body">
+          <tr>
+            <td><input type="date" value="2026-03-09" style="border:none;font-size:13px;width:100%;font-family:inherit;"></td>
+            <td><span class="badge badge-blue" onclick="cycleBadge(this)">1:1</span></td>
+            <td><textarea rows="2" placeholder="Notes from this session...">Initial development plan discussion. Agreed on 3 priority gaps and Q2 targets.</textarea></td>
+            <td><button class="note-del-btn" onclick="this.closest('tr').remove()" title="Delete">×</button></td>
+          </tr>
+        <tr>
+      <td><input type="date" value="2026-03-09" style="border:none;font-size:13px;width:100%;font-family:inherit;"></td>
+      <td><span class="badge badge-blue" onclick="cycleBadge(this)">1:1</span></td>
+      <td><textarea rows="2" placeholder="Notes..."></textarea></td>
+      <td><button class="note-del-btn" onclick="this.closest('tr').remove()" title="Delete">×</button></td></tr><tr>
+      <td><input type="date" value="2026-03-09" style="border:none;font-size:13px;width:100%;font-family:inherit;"></td>
+      <td><span class="badge badge-blue" onclick="cycleBadge(this)">1:1</span></td>
+      <td><textarea rows="2" placeholder="Notes..."></textarea></td>
+      <td><button class="note-del-btn" onclick="this.closest('tr').remove()" title="Delete">×</button></td></tr></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addNoteRow()">+ Add Note</button>
+    </div>
+  </div><!-- /notes -->
+
+</div><!-- /main -->
+
+<script>
+  // --- TAB NAVIGATION ---
+  function showSection(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // --- BADGE CYCLING ---
+  const badgeCycles = {
+    status: [
+      ['Not Started', 'badge-grey'],
+      ['Started',     'badge-blue'],
+      ['In Progress', 'badge-orange'],
+      ['Done',        'badge-green'],
+      ['Blocked',     'badge-red'],
+    ],
+    priority: [
+      ['Low',    'badge-grey'],
+      ['Medium', 'badge-orange'],
+      ['High',   'badge-red'],
+    ],
+    type: [
+      ['Gap',      'badge-red'],
+      ['Strength', 'badge-green'],
+      ['General',  'badge-grey'],
+    ],
+    note_type: [
+      ['1:1',       'badge-blue'],
+      ['Feedback',  'badge-green'],
+      ['Check-in',  'badge-orange'],
+      ['Other',     'badge-grey'],
+    ],
+  };
+
+  // Status → approximate progress %
+  const statusToPct = {
+    'Not Started': 5, 'Started': 25, 'In Progress': 50, 'Done': 100, 'Blocked': 10
+  };
+
+  function detectCycle(badge) {
+    const text = badge.textContent.trim();
+    for (const [, cycle] of Object.entries(badgeCycles)) {
+      if (cycle.some(([label]) => label === text)) return cycle;
+    }
+    return badgeCycles.status;
+  }
+
+  function cycleBadge(badge) {
+    if (badge.hasAttribute('data-noedit')) return;
+    const cycle = detectCycle(badge);
+    const cur = cycle.findIndex(([label]) => label === badge.textContent.trim());
+    const next = cycle[(cur + 1) % cycle.length];
+    const prev = badge.textContent.trim();
+    badge.textContent = next[0];
+    badge.className = 'badge ' + next[1];
+
+    const actionRow = badge.closest('#action-body tr:not(.subtask-row)');
+    if (actionRow) {
+      if (badge.hasAttribute('data-status') || ['Low','Medium','High'].includes(next[0]) || ['Low','Medium','High'].includes(prev)) {
+        const label = actionRow.querySelector('td[contenteditable]');
+        const actionName = label ? label.textContent.trim().slice(0, 50) : 'Action';
+        const colType = badge.hasAttribute('data-status') ? 'Status' : 'Priority';
+        autoLog(`${colType} of "${actionName}" → ${next[0]}`);
+      }
+      buildOverview();
+    }
+    const subRow = badge.closest('#action-body .subtask-row');
+    if (subRow) syncParentFromSubtasks(getParentRow(subRow));
+    scheduleAutoSave();
+  }
+
+  // --- REGISTERED DIMENSIONS ---
+  let registeredDims = [
+    { id: 'tech',          label: 'Technical Depth' },
+    { id: 'influence',     label: 'Cross-functional Influence' },
+    { id: 'ownership',     label: 'Ownership & Scope' },
+    { id: 'mentorship',    label: 'Mentorship & Leadership' },
+    { id: 'communication', label: 'Communication & Visibility' },
+  ];
+
+  function getDimOptions(selectedId) {
+    return `<option value="">—</option>` +
+      registeredDims.map(d =>
+        `<option value="${d.id}"${d.id === selectedId ? ' selected' : ''}>${d.label}</option>`
+      ).join('');
+  }
+
+  function syncAllDimSelects() {
+    document.querySelectorAll('.dim-select').forEach(sel => {
+      const cur = sel.value;
+      sel.innerHTML = getDimOptions(cur);
+    });
+  }
+
+  function slugify(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || ('dim-' + Date.now());
+  }
+
+  function addDimension() {
+    const name = prompt('New dimension name:');
+    if (!name || !name.trim()) return;
+    const id = slugify(name.trim());
+    if (registeredDims.some(d => d.id === id)) { alert('A dimension with that name already exists.'); return; }
+    registeredDims.push({ id, label: name.trim() });
+    syncAllDimSelects();
+    buildOverview();
+    autoLog(`Dimension added: "${name.trim()}"`);
+    scheduleAutoSave();
+  }
+
+  function removeDimension(dimId) {
+    const dim = registeredDims.find(d => d.id === dimId);
+    if (!dim) return;
+    if (!confirm(`Remove "${dim.label}"?\nActions assigned to it will become unassigned.`)) return;
+    registeredDims.splice(registeredDims.indexOf(dim), 1);
+    document.querySelectorAll(`#action-body tr[data-dim="${dimId}"]`).forEach(r => {
+      r.dataset.dim = '';
+      const sel = r.querySelector('.dim-select');
+      if (sel) { sel.innerHTML = getDimOptions(''); sel.value = ''; }
+    });
+    syncAllDimSelects();
+    buildOverview();
+    autoLog(`Dimension removed: "${dim.label}"`);
+    scheduleAutoSave();
+  }
+
+  // --- OVERVIEW: fully computed from Action Plan ---
+  function pctToColorClass(p) {
+    if (p >= 86) return 'fill-green';
+    if (p >= 61) return 'fill-blue';
+    if (p >= 31) return 'fill-orange';
+    return 'fill-red';
+  }
+
+  function buildOverview() {
+    const rows = [...document.querySelectorAll('#action-body tr')].filter(r => !r.classList.contains('subtask-row'));
+    const stats = {};
+    rows.forEach(r => {
+      const dim = r.dataset.dim || '';
+      const sb = r.querySelector('[data-status]');
+      const status = sb ? sb.textContent.trim() : 'Not Started';
+      if (!stats[dim]) stats[dim] = { total: 0, done: 0, pctSum: 0 };
+      stats[dim].total++;
+      if (status === 'Done') stats[dim].done++;
+      stats[dim].pctSum += statusToPct[status] || 5;
+    });
+
+    const tbody = document.getElementById('dimensions-body');
+    tbody.innerHTML = '';
+
+    function makeRow(dimId, label, removable) {
+      const d = stats[dimId] || { total: 0, done: 0, pctSum: 0 };
+      const avgPct = d.total ? Math.round(d.pctSum / d.total) : 0;
+      const colorClass = pctToColorClass(avgPct);
+      let statusText, statusClass;
+      if (avgPct >= 90)      { statusText = 'Done';        statusClass = 'badge-green'; }
+      else if (avgPct >= 50) { statusText = 'In Progress'; statusClass = 'badge-orange'; }
+      else if (avgPct >= 20) { statusText = 'Started';     statusClass = 'badge-blue'; }
+      else                   { statusText = 'Not Started'; statusClass = 'badge-grey'; }
+      const countHtml = d.total
+        ? `${d.done}&thinsp;/&thinsp;${d.total} done`
+        : `<em style="color:var(--muted)">no actions</em>`;
+      const delBtn = removable
+        ? `<button class="dim-del-btn" onclick="removeDimension('${dimId}')" title="Remove">×</button>`
+        : '';
+      const tr = document.createElement('tr');
+      tr.dataset.dim = dimId;
+      tr.innerHTML = `
+        <td style="display:flex;align-items:center;gap:5px">${label}${delBtn}</td>
+        <td style="font-size:12px;white-space:nowrap">${countHtml}</td>
+        <td><div class="progress-wrap"><div class="progress-label"><span></span><span class="pct-label">${avgPct}%</span></div><div class="progress-bar"><div class="progress-fill ${colorClass}" style="width:${avgPct}%" data-pct="${avgPct}"></div></div></div></td>
+        <td><span class="badge ${statusClass}">${statusText}</span></td>`;
+      tbody.appendChild(tr);
+    }
+
+    registeredDims.forEach(d => makeRow(d.id, d.label, true));
+
+    // Extra unregistered dims found in actions
+    Object.keys(stats).filter(k => k && !registeredDims.some(d => d.id === k))
+      .forEach(k => makeRow(k, k, false));
+
+    // Unassigned row (dimId = '')
+    if (stats['']) makeRow('', '<em style="color:var(--muted)">Unassigned</em>', false);
+
+    updateDial();
+  }
+
+  // Aggregate action completion for a dimension and update Overview
+  function recalcDim() { buildOverview(); }
+
+  // --- READINESS DIAL (computed from action plan) ---
+  function updateDial() {
+    const rows = [...document.querySelectorAll('#action-body tr')].filter(r => !r.classList.contains('subtask-row'));
+    if (!rows.length) return;
+    let total = 0;
+    rows.forEach(r => {
+      const sb = r.querySelector('[data-status]');
+      total += statusToPct[sb ? sb.textContent.trim() : 'Not Started'] || 5;
+    });
+    const pct = Math.round(total / rows.length);
+    const v = document.getElementById('dial-value');
+    const sub = document.getElementById('dial-sub');
+    v.textContent = pct + '%';
+    if (pct >= 90)      { v.style.color = '#2ecc71'; sub.textContent = '🎉 Ready to promote!'; }
+    else if (pct >= 65) { v.style.color = '#3498db'; sub.textContent = 'On track for promotion cycle'; }
+    else if (pct >= 35) { v.style.color = '#f39c12'; sub.textContent = 'Progress made — keep going'; }
+    else                { v.style.color = '#e94560'; sub.textContent = 'Significant gaps remain'; }
+  }
+
+  // --- INIT: restore or build fresh ---
+  async function initApp() {
+    if (!await restoreState()) buildOverview();
+    _updateFSABtn();
+  }
+  initApp();
+  document.addEventListener('input',  scheduleAutoSave);
+  document.addEventListener('change', scheduleAutoSave);
+
+  // --- ADD ROWS ---
+
+  // --- SUBTASK HELPERS ---
+  function getSubtaskGroup(parentRow) {
+    const group = [];
+    let sib = parentRow.nextElementSibling;
+    while (sib && (sib.classList.contains('subtask-row') || sib.classList.contains('subtask-add-row'))) {
+      group.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return group;
+  }
+
+  function getParentRow(el) {
+    let row = el.closest('.subtask-row, .subtask-add-row');
+    if (!row) return null;
+    let prev = row.previousElementSibling;
+    while (prev && (prev.classList.contains('subtask-row') || prev.classList.contains('subtask-add-row'))) {
+      prev = prev.previousElementSibling;
+    }
+    return prev;
+  }
+
+  function makeSubtaskRow() {
+    const tr = document.createElement('tr');
+    tr.className = 'subtask-row';
+    tr.innerHTML = `
+      <td style="text-align:center"><span style="color:var(--muted);font-size:10px">↳</span><button class="subtask-del-btn" onclick="removeSubtask(this)" title="Remove subtask">×</button></td>
+      <td contenteditable="true" data-placeholder="Subtask description…"></td>
+      <td></td>
+      <td></td>
+      <td contenteditable="true" data-placeholder="Owner…"></td>
+      <td><input type="date" class="action-due-input" onchange="syncParentFromSubtasks(getParentRow(this))" /></td>
+      <td><span class="badge badge-grey" onclick="cycleBadge(this)">Low</span></td>
+      <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status>Not Started</span></td>
+      <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>`;
+    return tr;
+  }
+
+  function makeSubtaskAddRow(colCount) {
+    const tr = document.createElement('tr');
+    tr.className = 'subtask-add-row';
+    tr.innerHTML = `<td colspan="${colCount}"><button class="add-row-btn" style="padding:4px 10px;font-size:11px;width:auto" onclick="addSubtask(this)">+ Add Subtask</button></td>`;
+    return tr;
+  }
+
+  function toggleSubtasks(btn) {
+    const parentRow = btn.closest('tr');
+    const group = getSubtaskGroup(parentRow);
+    if (group.length > 0) {
+      const isHidden = group[0].style.display === 'none';
+      group.forEach(r => r.style.display = isHidden ? '' : 'none');
+      btn.textContent = isHidden ? '▼' : '▶';
+    } else {
+      btn.textContent = '▼';
+      const colCount = parentRow.querySelectorAll('td').length;
+      const subRow = makeSubtaskRow();
+      const addRow = makeSubtaskAddRow(colCount);
+      parentRow.after(subRow, addRow);
+      subRow.querySelector('td[contenteditable]').focus();
+    }
+  }
+
+  function addSubtask(btn) {
+    const addRow = btn.closest('.subtask-add-row');
+    const subRow = makeSubtaskRow();
+    addRow.before(subRow);
+    subRow.querySelector('td[contenteditable]').focus();
+    const parentRow = getParentRow(addRow);
+    if (parentRow) syncParentFromSubtasks(parentRow);
+  }
+
+  function removeSubtask(btn) {
+    const subRow = btn.closest('.subtask-row');
+    const parentRow = getParentRow(btn);
+    subRow.remove();
+    if (parentRow) {
+      const remaining = getSubtaskGroup(parentRow).filter(r => r.classList.contains('subtask-row'));
+      if (remaining.length === 0) {
+        getSubtaskGroup(parentRow).forEach(r => r.remove());
+        const toggle = parentRow.querySelector('.subtask-toggle');
+        if (toggle) toggle.textContent = '▶';
+      }
+      syncParentFromSubtasks(parentRow);
+    }
+  }
+
+  // Derive parent task fields from its subtasks
+  function syncParentFromSubtasks(parentRow) {
+    if (!parentRow) return;
+    const subtasks = getSubtaskGroup(parentRow).filter(r => r.classList.contains('subtask-row'));
+    if (!subtasks.length) return;
+    const tds = parentRow.querySelectorAll('td');
+
+    // Status: average pct → label
+    const statuses = subtasks.map(r => r.querySelector('[data-status]')?.textContent.trim() || 'Not Started');
+    const hasBlocked = statuses.includes('Blocked');
+    const avgPct = Math.round(statuses.reduce((s, st) => s + (statusToPct[st] || 5), 0) / statuses.length);
+    let newStatus, newClass;
+    if (hasBlocked)        { newStatus = 'Blocked';    newClass = 'badge-red'; }
+    else if (avgPct >= 95) { newStatus = 'Done';        newClass = 'badge-green'; }
+    else if (avgPct >= 40) { newStatus = 'In Progress'; newClass = 'badge-orange'; }
+    else if (avgPct >= 15) { newStatus = 'Started';     newClass = 'badge-blue'; }
+    else                   { newStatus = 'Not Started'; newClass = 'badge-grey'; }
+    const statusBadge = tds[7]?.querySelector('[data-status]');
+    if (statusBadge) { statusBadge.textContent = newStatus; statusBadge.className = 'badge ' + newClass; }
+
+    // Due: latest date across subtasks
+    const dues = subtasks.map(r => r.querySelector('input[type=date]')?.value).filter(Boolean).sort();
+    if (dues.length) {
+      const dueInput = tds[5]?.querySelector('input[type=date]');
+      if (dueInput) dueInput.value = dues[dues.length - 1];
+    }
+
+    // Priority: highest among subtasks
+    const PRIO = ['Low', 'Medium', 'High'];
+    const PRIO_CLASS = { Low: 'badge-grey', Medium: 'badge-orange', High: 'badge-red' };
+    const priorities = subtasks.map(r => {
+      const badges = r.querySelectorAll('.badge:not([data-status])');
+      for (const b of badges) if (PRIO.includes(b.textContent.trim())) return b.textContent.trim();
+      return 'Low';
+    });
+    const maxPrio = priorities.reduce((m, p) => PRIO.indexOf(p) > PRIO.indexOf(m) ? p : m, 'Low');
+    const prioEl = [...(tds[6]?.querySelectorAll('.badge') || [])].find(b => !b.hasAttribute('data-status'));
+    if (prioEl) { prioEl.textContent = maxPrio; prioEl.className = 'badge ' + PRIO_CLASS[maxPrio]; }
+
+    buildOverview();
+    scheduleAutoSave();
+  }
+
+  function addActionRow() {
+    const tr = document.createElement('tr');
+    tr.dataset.dim = '';
+    tr.innerHTML = `
+      <td style="white-space:nowrap"><button class="subtask-toggle" onclick="toggleSubtasks(this)" title="Subtasks">▶</button><button class="action-del-btn" onclick="removeActionRow(this)" title="Remove task">×</button></td>
+      <td contenteditable="true">New action</td>
+      <td><span class="badge badge-grey" onclick="cycleBadge(this)" style="font-size:11px">General</span></td>
+      <td><select class="dim-select" onchange="this.closest('tr').dataset.dim=this.value;recalcDim()">${getDimOptions('')}</select></td>
+      <td contenteditable="true">Eva</td>
+      <td><input type="date" class="action-due-input" /></td>
+      <td><span class="badge badge-grey" onclick="cycleBadge(this)">Low</span></td>
+      <td><span class="badge badge-grey" onclick="cycleBadge(this)" data-status>Not Started</span></td>
+      <td><textarea class="comment-cell" rows="1" placeholder="Add comment…"></textarea></td>`;
+    document.getElementById('action-body').appendChild(tr);
+    scheduleAutoSave();
+  }
+
+  function removeActionRow(btn) {
+    const row = btn.closest('tr');
+    getSubtaskGroup(row).forEach(r => r.remove());
+    row.remove();
+    buildOverview();
+    scheduleAutoSave();
+  }
+
+  function addNoteRow() {
+    const today = new Date().toISOString().split('T')[0];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" value="${today}" style="border:none;font-size:13px;width:100%;font-family:inherit;" /></td>
+      <td><span class="badge badge-blue" onclick="cycleBadge(this)">1:1</span></td>
+      <td><textarea rows="2" placeholder="Notes..."></textarea></td>
+      <td><button class="note-del-btn" onclick="this.closest('tr').remove()" title="Delete">×</button></td>`;
+    document.getElementById('notes-body').appendChild(tr);
+    tr.querySelector('textarea').focus();
+    scheduleAutoSave();
+  }
+  function autoLog(msg) {
+    const today = new Date().toISOString().split('T')[0];
+    let row = document.querySelector(`#notes-body tr.auto-log-row[data-date="${today}"]`);
+    if (!row) {
+      row = document.createElement('tr');
+      row.className = 'auto-log-row';
+      row.dataset.date = today;
+      row.innerHTML = `
+        <td><input type="date" value="${today}" style="border:none;font-size:13px;width:100%;font-family:inherit;" /></td>
+        <td><span class="badge badge-grey" data-noedit style="font-size:11px">Auto</span></td>
+        <td class="auto-log-cell">
+          <details>
+            <summary class="auto-log-summary">1 change</summary>
+            <ul class="auto-log-list"><li></li></ul>
+          </details>
+        </td>
+        <td><button class="note-del-btn" onclick="this.closest('tr').remove()" title="Delete">×</button></td>`;
+      document.getElementById('notes-body').prepend(row);
+      row.querySelector('.auto-log-list li').textContent = msg;
+    } else {
+      const list = row.querySelector('.auto-log-list');
+      const li = document.createElement('li');
+      li.textContent = msg;
+      list.appendChild(li);
+      const count = list.querySelectorAll('li').length;
+      row.querySelector('.auto-log-summary').textContent = `${count} changes`;
+      row.querySelector('details').open = true;
+    }
+  }
+
+  // ─── PERSISTENCE & SAVE ────────────────────────────────────────────────────
+
+  const STORE_KEY = 'devplan_2026_03_eva';
+  const STORE_VER = 5;
+  let _autoSaveTimer = null;
+
+  function scheduleAutoSave() {
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(saveState, 1500);
+  }
+
+  // ─── FILE SYSTEM ACCESS (serverless) ───────────────────────────────────────
+  const FSA_OK = ('showOpenFilePicker' in window);
+  let _fh = null; // cached FileSystemFileHandle
+
+  function _idb(mode, fn) {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open('devplan_fsa_v1', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('fh');
+      req.onsuccess = e => { try { fn(e.target.result.transaction('fh', mode).objectStore('fh'), res, rej); } catch(ex) { rej(ex); } };
+      req.onerror  = e => rej(e.target.error);
+    });
+  }
+  const idbGet = k     => _idb('readonly',  (s,r,j)=>{ const q=s.get(k);    q.onsuccess=e=>r(e.target.result); q.onerror=j; });
+  const idbPut = (k,v) => _idb('readwrite', (s,r,j)=>{ const q=s.put(v,k);  q.onsuccess=()=>r();               q.onerror=j; });
+
+  async function _cachedFH() {
+    if (_fh) return _fh;
+    try {
+      const h = await idbGet('fh');
+      if (!h) return null;
+      if ((await h.queryPermission({mode:'readwrite'})) === 'granted') { _fh = h; return h; }
+    } catch(e) {}
+    return null;
+  }
+
+  async function connectDataFile() {
+    if (!FSA_OK) { showToast('⚠️ File System Access not supported — use Chrome or Edge'); return; }
+    try {
+      const [h] = await window.showOpenFilePicker({
+        types: [{ description: 'Dashboard JSON', accept: {'application/json': ['.json']} }],
+        multiple: false
+      });
+      await h.requestPermission({mode:'readwrite'});
+      await idbPut('fh', h);
+      _fh = h;
+      const state = JSON.parse(await (await h.getFile()).text());
+      if (applyState(state)) {
+        try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+        showToast('✅ Connected: ' + h.name + ' — saves go directly to this file');
+      } else {
+        showToast('⚠️ File opened but version mismatch');
+      }
+      _updateFSABtn();
+    } catch(e) { if (e.name !== 'AbortError') showToast('⚠️ ' + e.message); }
+  }
+
+  async function _fsaRead() {
+    const h = await _cachedFH();
+    if (!h) return null;
+    try { return JSON.parse(await (await h.getFile()).text()); } catch(e) { return null; }
+  }
+
+  async function _fsaWrite(state) {
+    const h = await _cachedFH();
+    if (!h) return false;
+    try {
+      const w = await h.createWritable();
+      await w.write(JSON.stringify(state, null, 2));
+      await w.close();
+      return true;
+    } catch(e) { return false; }
+  }
+
+  function _updateFSABtn() {
+    const btn = document.getElementById('_fsa_btn');
+    if (!btn) return;
+    if (_fh) { btn.textContent = '📄 ' + _fh.name; btn.style.color = '#27ae60'; btn.title = 'Connected — click to switch file'; }
+    else     { btn.textContent = '📂 Connect data.json'; btn.style.color = ''; btn.title = 'Connect data.json for serverless persistence'; }
+  }
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Collect all live state into a plain object
+  function collectState() {
+    // Clone the bodies so we NEVER touch the live DOM
+    const actionClone = document.getElementById('action-body').cloneNode(true);
+    const notesClone  = document.getElementById('notes-body').cloneNode(true);
+
+    // Sync live input/textarea/select values into the clone's attributes
+    const syncClone = (liveRoot, cloneRoot) => {
+      const liveInputs    = [...liveRoot.querySelectorAll('input')];
+      const cloneInputs   = [...cloneRoot.querySelectorAll('input')];
+      liveInputs.forEach((el, i) => { if (cloneInputs[i]) cloneInputs[i].setAttribute('value', el.value); });
+
+      const liveTAs  = [...liveRoot.querySelectorAll('textarea')];
+      const cloneTAs = [...cloneRoot.querySelectorAll('textarea')];
+      liveTAs.forEach((el, i) => { if (cloneTAs[i]) cloneTAs[i].textContent = el.value; });
+
+      const liveSels  = [...liveRoot.querySelectorAll('select')];
+      const cloneSels = [...cloneRoot.querySelectorAll('select')];
+      liveSels.forEach((el, i) => {
+        const cs = cloneSels[i]; if (!cs) return;
+        [...cs.options].forEach(o => o.removeAttribute('selected'));
+        if (el.selectedIndex >= 0) cs.options[el.selectedIndex]?.setAttribute('selected', '');
+      });
+    };
+
+    syncClone(document.getElementById('action-body'), actionClone);
+    syncClone(document.getElementById('notes-body'),  notesClone);
+
+    return {
+      ver: STORE_VER,
+      ts: new Date().toISOString(),
+      dims: registeredDims,
+      employee: document.getElementById('employee-name')?.textContent.trim() || '',
+      manager:  document.getElementById('manager-name')?.textContent.trim()  || '',
+      period:   document.getElementById('period-name')?.textContent.trim()   || '',
+      curLevel: document.querySelector('.meta-grid input:nth-of-type(1)')?.value || '',
+      tgtLevel: document.querySelector('.meta-grid input:nth-of-type(2)')?.value || '',
+      revDate:  document.querySelector('.meta-grid input[type=date]')?.value  || '',
+      actionHTML: actionClone.innerHTML,
+      notesHTML:  notesClone.innerHTML,
+    };
+  }
+
+  // Auto-save: localStorage + FSA file if connected (silent, no toast)
+  async function saveState() {
+    try {
+      const state = collectState();
+      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+      updateSaveLabel(state.ts);
+      await _fsaWrite(state); // silent: writes data.json directly if connected
+    } catch(e) {}
+  }
+
+  // Apply a state object to the DOM
+  function applyState(state) {
+    if (!state || state.ver !== STORE_VER) return false;
+    if (state.dims && state.dims.length) { registeredDims = state.dims; syncAllDimSelects(); }
+    if (state.employee) { const el = document.getElementById('employee-name'); if (el) el.textContent = state.employee; }
+    if (state.manager)  { const el = document.getElementById('manager-name');  if (el) el.textContent = state.manager;  }
+    if (state.period)   { const el = document.getElementById('period-name');   if (el) el.textContent = state.period;   }
+    const metaInputs = document.querySelectorAll('.meta-grid input');
+    if (state.curLevel && metaInputs[0]) metaInputs[0].value = state.curLevel;
+    if (state.tgtLevel && metaInputs[1]) metaInputs[1].value = state.tgtLevel;
+    const revEl = document.querySelector('.meta-grid input[type=date]');
+    if (state.revDate && revEl) revEl.value = state.revDate;
+    if (state.actionHTML && state.actionHTML.trim()) document.getElementById('action-body').innerHTML = state.actionHTML;
+    if (state.notesHTML  && state.notesHTML.trim())  document.getElementById('notes-body').innerHTML  = state.notesHTML;
+    buildOverview();
+    if (state.ts) updateSaveLabel(state.ts);
+    return true;
+  }
+
+  // On load: read data injected by serve.py, fall back to localStorage
+  async function restoreState() {
+    // 1. FSA: read data.json directly from connected file (no server needed)
+    const fsaState = await _fsaRead();
+    if (fsaState && applyState(fsaState)) return true;
+    // 2. _initial_data injected by serve.py
+    try {
+      const el = document.getElementById('_initial_data');
+      if (el && el.textContent.trim()) {
+        const state = JSON.parse(el.textContent);
+        if (applyState(state)) return true;
+      }
+    } catch(e) {}
+    // 3. localStorage fallback
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const state = JSON.parse(raw);
+        if (applyState(state)) return true;
+      }
+    } catch(e) {}
+    return false;
+  }
+
+  function updateSaveLabel(isoStr) {
+    const el = document.getElementById('save-label');
+    if (!el) return;
+    try {
+      const d = new Date(isoStr);
+      el.textContent = 'Saved ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' · ' + d.toLocaleDateString();
+    } catch(e) { el.textContent = 'Saved'; }
+  }
+
+  // ─── MARKDOWN GENERATION ───────────────────────────────────────────────────
+
+  function generateMarkdown() {
+    const employee = document.getElementById('employee-name')?.textContent || 'Employee';
+    const manager  = document.getElementById('manager-name')?.textContent  || 'Manager';
+    const period   = document.getElementById('period-name')?.textContent   || '';
+    const now = new Date().toLocaleDateString();
+    let md = `# Promotion Readiness: ${employee}\n`;
+    md += `**Manager:** ${manager}  |  **Period:** ${period}  |  **Generated:** ${now}\n\n`;
+
+    // Overview: dimensions
+    md += `## Overview\n\n`;
+    const dimRows = document.querySelectorAll('#dimensions-body tr');
+    if (dimRows.length) {
+      md += `| Dimension | Progress | Status |\n|---|---|---|\n`;
+      dimRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const dim    = cells[0]?.textContent.trim() || '';
+        const status = cells[2]?.textContent.trim() || '';
+        const bar    = cells[1]?.querySelector('.bar-fill');
+        const pct    = bar ? bar.style.width : '0%';
+        md += `| ${dim} | ${pct} | ${status} |\n`;
+      });
+    }
+
+    // Action Plan
+    md += `\n## Action Plan\n\n`;
+    md += `| # | Action | Type | Dimension | Owner | Due | Priority | Status | Comments |\n`;
+    md += `|---|---|---|---|---|---|---|---|---|\n`;
+    let n = 0;
+    document.querySelectorAll('#action-body tr:not(.subtask-row):not(.subtask-add-row)').forEach(row => {
+      n++;
+      const tds = row.querySelectorAll('td');
+      const action   = tds[1]?.textContent.trim() || '';
+      const type     = tds[2]?.querySelector('.badge')?.textContent.trim() || '';
+      const dimSel   = tds[3]?.querySelector('select');
+      const dim      = dimSel ? (dimSel.options[dimSel.selectedIndex]?.text || '') : '';
+      const owner    = tds[4]?.textContent.trim() || '';
+      const due      = tds[5]?.querySelector('input')?.value || '';
+      const priority = [...(tds[6]?.querySelectorAll('.badge') || [])].map(b => b.textContent.trim()).join(' ');
+      const status   = tds[7]?.querySelector('[data-status]')?.textContent.trim() || '';
+      const comments = tds[8]?.querySelector('textarea')?.value.trim() || '';
+      md += `| ${n} | ${action} | ${type} | ${dim} | ${owner} | ${due} | ${priority} | ${status} | ${comments} |\n`;
+
+      // subtasks
+      const group = [];
+      let next = row.nextElementSibling;
+      while (next && (next.classList.contains('subtask-row') || next.classList.contains('subtask-add-row'))) {
+        if (next.classList.contains('subtask-row')) group.push(next);
+        next = next.nextElementSibling;
+      }
+      group.forEach((sr, si) => {
+        const stds = sr.querySelectorAll('td');
+        const sAction   = stds[1]?.textContent.trim() || '';
+        const sOwner    = stds[4]?.textContent.trim() || '';
+        const sDue      = stds[5]?.querySelector('input')?.value || '';
+        const sPriority = [...(stds[6]?.querySelectorAll('.badge') || [])].map(b => b.textContent.trim()).join(' ');
+        const sStatus   = stds[7]?.querySelector('[data-status]')?.textContent.trim() || '';
+        const sComments = stds[8]?.querySelector('textarea')?.value.trim() || '';
+        md += `| ${n}.${si+1} | ↳ ${sAction} | | | ${sOwner} | ${sDue} | ${sPriority} | ${sStatus} | ${sComments} |\n`;
+      });
+    });
+
+    // Notes & Log
+    md += `\n## Notes & Log\n\n`;
+    document.querySelectorAll('#notes-body tr:not(.auto-log-row)').forEach(row => {
+      const tds = row.querySelectorAll('td');
+      const date  = tds[0]?.querySelector('input')?.value || '';
+      const type  = tds[1]?.querySelector('.badge')?.textContent.trim() || '';
+      const note  = tds[2]?.querySelector('textarea')?.value.trim() || '';
+      if (note) md += `- **[${date}]** *(${type})* ${note}\n`;
+    });
+    document.querySelectorAll('#notes-body tr.auto-log-row').forEach(row => {
+      const date  = row.dataset.date || '';
+      const items = [...row.querySelectorAll('.auto-log-list li')].map(li => li.textContent.trim());
+      if (items.length) md += `- **[${date}]** *(Auto-log)* ${items.join('; ')}\n`;
+    });
+
+    return md;
+  }
+
+
+  // ─── LOAD FROM FILE ────────────────────────────────────────────────────────
+
+  async function loadData() {
+    if (FSA_OK) {
+      // FSA path: open file picker, persist handle for future saves
+      try {
+        const [h] = await window.showOpenFilePicker({
+          types: [{ description: 'Dashboard JSON', accept: {'application/json': ['.json']} }],
+          multiple: false
+        });
+        await h.requestPermission({mode:'readwrite'});
+        await idbPut('fh', h);
+        _fh = h;
+        const state = JSON.parse(await (await h.getFile()).text());
+        if (applyState(state)) {
+          try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+          showToast('✅ Loaded: ' + h.name + ' — future saves go directly to this file');
+        } else {
+          showToast('⚠️ File opened but version mismatch');
+        }
+        _updateFSABtn();
+      } catch(e) { if (e.name !== 'AbortError') showToast('⚠️ ' + e.message); }
+    } else {
+      // Fallback: hidden <input type="file">
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.accept = '.json,application/json';
+      inp.onchange = async () => {
+        const file = inp.files[0]; if (!file) return;
+        try {
+          const state = JSON.parse(await file.text());
+          if (applyState(state)) {
+            try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+            showToast('✅ Loaded: ' + file.name);
+          } else {
+            showToast('⚠️ Version mismatch — could not apply loaded data');
+          }
+        } catch(e) { showToast('⚠️ ' + e.message); }
+      };
+      inp.click();
+    }
+  }
+
+  // ─── SAVE & UPDATE ─────────────────────────────────────────────────────────
+
+  async function saveAndDownload() {
+    const state = collectState();
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e) {}
+    updateSaveLabel(state.ts);
+
+    // Try FSA write first (if a file is connected via "Connect data.json" or loadData)
+    const wrote = await _fsaWrite(state);
+    if (wrote) { showToast('✅ Saved — data.json updated'); return; }
+
+    // Fallback: trigger a browser download of data.json
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = 'data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ data.json downloaded — replace the file in your folder, or use "Connect data.json" for direct saves');
+  }
+
+  function showToast(msg) {
+    let t = document.getElementById('_toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_toast';
+      t.style.cssText = 'position:fixed;bottom:28px;right:28px;background:#2d3748;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25);transition:opacity 0.4s;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 4000);
+  }
+
+</script>
+
+</body>
+</html>
