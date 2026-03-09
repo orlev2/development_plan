@@ -3,7 +3,7 @@
 Local dev server for the promotion dashboard.
 
 - GET  /                      → serves HTML with current data.json injected
-- GET  /2026_03_Eva_Giannatou.html → same
+- GET  /development_plan.html → same
 - GET  /data                  → returns data.json as JSON
 - POST /save  {state:{...}}   → writes data.json, runs generate_md.py
 
@@ -16,7 +16,7 @@ import http.server, json, os, subprocess, sys
 
 PORT    = 7654
 DIR     = os.path.dirname(os.path.abspath(__file__))
-HTML_FN = "2026_03_Eva_Giannatou.html"
+HTML_FN = "development_plan.html"
 DATA_FN = "data.json"
 
 

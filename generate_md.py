@@ -15,7 +15,7 @@ except ImportError:
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE  = os.path.join(SCRIPT_DIR, "data.json")
-MD_FILE    = os.path.join(SCRIPT_DIR, "2026_03_Eva_Giannatou.md")
+MD_FILE    = os.path.join(SCRIPT_DIR, "development_plan.md")
 
 STATUS_PCT = {"Not Started": 5, "Started": 25, "In Progress": 50, "Done": 100, "Blocked": 10}
 

@@ -1,10 +1,10 @@
-# Development Plan — Eva Giannatou
+# Development Plan — 
 
-> **Generated:** 2026-03-09 13:36 UTC &nbsp;|&nbsp; **Period:** March 2026
+> **Generated:** 2026-03-09 13:45 UTC &nbsp;|&nbsp; **Period:** March 2026
 
 | | |
 |---|---|
-| **Employee** | Eva Giannatou |
+| **Employee** |  |
 | **Manager** | — |
 | **Current Level** | L4 / IC4 |
 | **Target Level** |  |
@@ -30,14 +30,14 @@
 
 | # | Action | Type | Dimension | Owner | Due | Priority | Status | Comments |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Lead cross-team project & present findings at org all-hands | Gap | Ownership & Scope | Eva | 2026-06-30 | High | Done | test |
-| 2 | Take on one mentee; run monthly structured 1:1s | Gap | Mentorship & Leadership | Eva | 2026-04-30 | Medium | Done |  |
-| 3 | Request slot at leadership review; prepare executive summary deck | Gap | Communication & Visibility | Eva + Manager | 2026-05-31 | High | In Progress |  |
-| 4 | Publish ML best-practices guide as org-level standard; present at engineering su… | Strength | Technical Depth | Eva | 2026-06-30 | Medium | Done |  |
-| 5 | Formalise cross-team liaison role; capture positive feedback in promo doc | Strength | Cross-functional Influence | Eva + Manager | 2026-05-31 | Medium | Not Started |  |
-| 6 | Document "judgment calls" instances in promotion evidence package | Strength | Technical Depth | Eva | 2026-08-31 | Medium | Not Started |  |
-| 7 | Take on one stretch project with ambiguous scope to demonstrate next-level owner… | Strength | Ownership & Scope | Eva | 2026-06-30 | High | Not Started |  |
-| 8 | Compile promotion evidence package | General | — | Eva + Manager | 2026-08-31 | High | Not Started |  |
+| 1 | Lead cross-team project & present findings at org all-hands | Gap | Ownership & Scope | Employee | 2026-06-30 | High | Done | test |
+| 2 | Take on one mentee; run monthly structured 1:1s | Gap | Mentorship & Leadership | Employee | 2026-04-30 | Medium | Done |  |
+| 3 | Request slot at leadership review; prepare executive summary deck | Gap | Communication & Visibility | Employee + Manager | 2026-05-31 | High | In Progress |  |
+| 4 | Publish ML best-practices guide as org-level standard; present at engineering su… | Strength | Technical Depth | Employee | 2026-06-30 | Medium | Done |  |
+| 5 | Formalise cross-team liaison role; capture positive feedback in promo doc | Strength | Cross-functional Influence | Employee + Manager | 2026-05-31 | Medium | Not Started |  |
+| 6 | Document "judgment calls" instances in promotion evidence package | Strength | Technical Depth | Employee | 2026-08-31 | Medium | Not Started |  |
+| 7 | Take on one stretch project with ambiguous scope to demonstrate next-level owner… | Strength | Ownership & Scope | Employee | 2026-06-30 | High | Not Started |  |
+| 8 | Compile promotion evidence package | General | — | Employee + Manager | 2026-08-31 | High | Not Started |  |
 
 ---
 
