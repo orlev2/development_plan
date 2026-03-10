@@ -53,14 +53,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if state is None:
             self._respond({"ok": False, "stderr": "Missing 'state' key"}); return
 
-        # Write data.json
-        data_path = os.path.join(DIR, DATA_FN)
+        # Write data file (use provided filename, restricted to this dir)
+        filename  = os.path.basename(body.get("filename", DATA_FN))
+        data_path = os.path.join(DIR, filename)
         with open(data_path, "w", encoding="utf-8") as f:
             json.dump(state, f, ensure_ascii=False, indent=2)
 
-        # Regenerate markdown
+        # Regenerate markdown with matching filename
         result = subprocess.run(
-            [sys.executable, "generate_md.py"],
+            [sys.executable, "generate_md.py", filename],
             capture_output=True, text=True, cwd=DIR
         )
         self._respond({"ok": result.returncode == 0,

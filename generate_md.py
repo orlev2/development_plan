@@ -14,8 +14,15 @@ except ImportError:
     from bs4 import BeautifulSoup
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE  = os.path.join(SCRIPT_DIR, "data.json")
-MD_FILE    = os.path.join(SCRIPT_DIR, "development_plan.md")
+
+# Accept an optional data file path as CLI argument; default to data.json
+if len(sys.argv) > 1:
+    DATA_FILE = os.path.abspath(sys.argv[1])
+else:
+    DATA_FILE = os.path.join(SCRIPT_DIR, "data.json")
+
+stem    = os.path.splitext(os.path.basename(DATA_FILE))[0]
+MD_FILE = os.path.join(os.path.dirname(DATA_FILE), stem + ".md")
 
 STATUS_PCT = {"Not Started": 5, "Started": 25, "In Progress": 50, "Done": 100, "Blocked": 10}
 

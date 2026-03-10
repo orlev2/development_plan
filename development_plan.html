@@ -1137,6 +1137,13 @@
       const w = await h.createWritable();
       await w.write(JSON.stringify(state, null, 2));
       await w.close();
+      // Notify server so it regenerates the matching .md file
+      fetch('/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({state, filename: h.name}),
+        signal: AbortSignal.timeout(2000)
+      }).catch(() => {});
       return true;
     } catch(e) { return false; }
   }
@@ -1402,16 +1409,17 @@
 
     // Try FSA write first (if a file is connected via "Connect data.json" or loadData)
     const wrote = await _fsaWrite(state);
-    if (wrote) { showToast('✅ Saved — data.json updated'); return; }
+    if (wrote) { showToast('✅ Saved — ' + (_fh ? _fh.name : 'data.json') + ' updated'); return; }
 
-    // Fallback: trigger a browser download of data.json
+    // Fallback: trigger a browser download using the connected filename (or default)
+    const dlName = (_fh ? _fh.name : 'data.json');
     const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url; a.download = 'data.json';
+    a.href = url; a.download = dlName;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('✅ data.json downloaded — replace the file in your folder, or use "Connect data.json" for direct saves');
+    showToast('✅ ' + dlName + ' downloaded — replace the file in your folder, or use "Connect data.json" for direct saves');
   }
 
   function showToast(msg) {
