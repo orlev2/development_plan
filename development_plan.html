@@ -298,6 +298,9 @@
   .auto-log-row td { background: #f5f8ff; }
   .action-due-input { border:none; font-size:13px; font-family:inherit; background:transparent; color:var(--text); width:130px; cursor:pointer; }
   .action-due-input:focus { outline:1px solid var(--info); border-radius:4px; }
+  .sortable-th { cursor:pointer; user-select:none; white-space:nowrap; }
+  .sortable-th:hover { background:#eef2ff; }
+  .sort-ind { font-size:10px; margin-left:3px; color:var(--accent); }
   /* SAVE BAR */
   .nav { display:flex; align-items:center; gap:4px; }
   .save-btn { margin-left:auto; background:var(--accent); color:#fff; border:none; border-radius:8px; padding:7px 16px; font-size:13px; font-weight:600; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
@@ -466,7 +469,7 @@
 
       <table id="action-table">
         <thead><tr>
-          <th style="width:28px"></th><th>Action</th><th>Type</th><th>Dimension</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th><th>Comments</th>
+          <th style="width:28px"></th><th>Action</th><th>Type</th><th class="sortable-th" onclick="sortActions('dim')">Dimension<span class="sort-ind" id="sort-ind-dim"></span></th><th>Owner</th><th class="sortable-th" onclick="sortActions('due')">Due<span class="sort-ind" id="sort-ind-due"></span></th><th class="sortable-th" onclick="sortActions('priority')">Priority<span class="sort-ind" id="sort-ind-priority"></span></th><th class="sortable-th" onclick="sortActions('status')">Status<span class="sort-ind" id="sort-ind-status"></span></th><th>Comments</th>
         </tr></thead>
         <tbody id="action-body">
           <tr data-dim="ownership">
@@ -969,6 +972,56 @@
     getSubtaskGroup(row).forEach(r => r.remove());
     row.remove();
     buildOverview();
+    scheduleAutoSave();
+  }
+
+  const _priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
+  const _statusOrder   = { 'Not Started': 0, 'Started': 1, 'In Progress': 2, 'Done': 3, 'Blocked': 4 };
+  let _sortState = { field: null, dir: 1 };
+
+  function sortActions(field) {
+    _sortState.dir = (_sortState.field === field) ? _sortState.dir * -1 : 1;
+    _sortState.field = field;
+
+    const tbody = document.getElementById('action-body');
+
+    // Group parent rows with their following subtask/add rows
+    const groups = [];
+    let cur = null;
+    [...tbody.children].forEach(row => {
+      if (row.classList.contains('subtask-row') || row.classList.contains('subtask-add-row')) {
+        if (cur) cur.subs.push(row);
+      } else {
+        cur = { parent: row, subs: [] };
+        groups.push(cur);
+      }
+    });
+
+    const getKey = ({ parent: row }) => {
+      const tds = row.querySelectorAll('td');
+      if (field === 'dim')      return (tds[3]?.querySelector('.dim-select')?.value || '').toLowerCase();
+      if (field === 'due')      return tds[5]?.querySelector('input')?.value || 'zzzz';
+      if (field === 'priority') return _priorityOrder[tds[6]?.querySelector('.badge')?.textContent.trim()] ?? 99;
+      if (field === 'status')   return _statusOrder[tds[7]?.querySelector('.badge')?.textContent.trim()] ?? 99;
+      return '';
+    };
+
+    groups.sort((a, b) => {
+      const ka = getKey(a), kb = getKey(b);
+      return (ka < kb ? -1 : ka > kb ? 1 : 0) * _sortState.dir;
+    });
+
+    groups.forEach(({ parent, subs }) => {
+      tbody.appendChild(parent);
+      subs.forEach(s => tbody.appendChild(s));
+    });
+
+    // Update indicators
+    ['dim', 'due', 'priority', 'status'].forEach(f => {
+      const el = document.getElementById('sort-ind-' + f);
+      if (el) el.textContent = f === field ? (_sortState.dir === 1 ? ' ▲' : ' ▼') : '';
+    });
+
     scheduleAutoSave();
   }
 
