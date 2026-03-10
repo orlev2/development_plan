@@ -1215,17 +1215,20 @@
     const revEl = document.querySelector('.meta-grid input[type=date]');
     if (state.revDate && revEl) revEl.value = state.revDate;
     if (state.actionHTML && state.actionHTML.trim()) document.getElementById('action-body').innerHTML = state.actionHTML;
-    // Migration: ensure all action rows have a delete button (in case state was saved before delete buttons were added)
+    // Migration: ensure all action rows have a working delete button.
+    // Always re-assign onclick because addEventListener is lost during innerHTML serialization.
     document.querySelectorAll('#action-body tr:not(.subtask-row):not(.subtask-add-row)').forEach(row => {
       const firstTd = row.querySelector('td:first-child');
-      if (firstTd && !firstTd.querySelector('.action-del-btn')) {
-        const delBtn = document.createElement('button');
+      if (!firstTd) return;
+      let delBtn = firstTd.querySelector('.action-del-btn');
+      if (!delBtn) {
+        delBtn = document.createElement('button');
         delBtn.className = 'action-del-btn';
         delBtn.title = 'Remove task';
         delBtn.textContent = '×';
-        delBtn.addEventListener('click', function() { removeActionRow(this); });
         firstTd.appendChild(delBtn);
       }
+      delBtn.onclick = function() { removeActionRow(this); };
     });
     if (state.notesHTML  && state.notesHTML.trim())  document.getElementById('notes-body').innerHTML  = state.notesHTML;
     buildOverview();
